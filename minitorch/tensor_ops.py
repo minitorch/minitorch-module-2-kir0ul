@@ -20,8 +20,7 @@ if TYPE_CHECKING:
 
 
 class MapProto(Protocol):
-    def __call__(self, x: Tensor, out: Optional[Tensor] = ..., /) -> Tensor:
-        ...
+    def __call__(self, x: Tensor, out: Optional[Tensor] = ..., /) -> Tensor: ...
 
 
 class TensorOps:
@@ -136,7 +135,7 @@ class SimpleOps(TensorOps):
 
     @staticmethod
     def zip(
-        fn: Callable[[float, float], float]
+        fn: Callable[[float, float], float],
     ) -> Callable[["Tensor", "Tensor"], "Tensor"]:
         """
         Higher-order tensor zip function ::
