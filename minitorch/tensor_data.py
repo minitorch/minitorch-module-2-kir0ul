@@ -16,6 +16,7 @@ MAX_DIMS = 32
 
 class IndexingError(RuntimeError):
     "Exception raised for indexing errors."
+
     pass
 
 
@@ -218,9 +219,9 @@ class TensorData:
         Returns:
             New `TensorData` with the same storage and a new dimension order.
         """
-        assert list(sorted(order)) == list(
-            range(len(self.shape))
-        ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
+        assert list(sorted(order)) == list(range(len(self.shape))), (
+            f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
+        )
 
         # TODO: Implement for Task 2.1.
         raise NotImplementedError("Need to implement for Task 2.1")

@@ -92,25 +92,25 @@ class Scalar:
         return Mul.apply(b, Inv.apply(self))
 
     def __add__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Add.apply(self, b)
 
     def __bool__(self) -> bool:
         return bool(self.data)
 
     def __lt__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return LT.apply(self, b)
 
     def __gt__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return LT.apply(b, self)
 
     def __eq__(self, b: ScalarLike) -> Scalar:  # type: ignore[override]
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return EQ.apply(self, b)
 
     def __sub__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Add.apply(self, Neg.apply(b))
 
     def __neg__(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Neg.apply(self)
 
     def __radd__(self, b: ScalarLike) -> Scalar:
         return self + b
@@ -119,16 +119,16 @@ class Scalar:
         return self * b
 
     def log(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Log.apply(self)
 
     def exp(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Exp.apply(self)
 
     def sigmoid(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Sigmoid.apply(self)
 
     def relu(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return ReLU.apply(self)
 
     # Variable elements for backprop
 
@@ -143,6 +143,7 @@ class Scalar:
         assert self.is_leaf(), "Only leaf variables can have derivatives."
         if self.derivative is None:
             self.derivative = 0.0
+        assert isinstance(x, (int, float)), "The derivative should be a number"
         self.derivative += x
 
     def is_leaf(self) -> bool:
@@ -162,8 +163,20 @@ class Scalar:
         assert h is not None
         assert h.last_fn is not None
         assert h.ctx is not None
-
-        raise NotImplementedError("Need to include this file from past assignment.")
+        variables = h.inputs
+        back = []
+        deriv = h.last_fn.backward(ctx=h.ctx, d_output=d_output)
+        assert deriv is not None, "Derivative can not be None"
+        if not isinstance(deriv, (list, tuple)):
+            deriv = [deriv]
+        assert len(variables) == len(deriv), (
+            "Variables and derivatives should have the same length"
+        )
+        for var, der in zip(variables, deriv):
+            if not var.is_constant():
+                back.append((var, der))
+        print(back)
+        return back
 
     def backward(self, d_output: Optional[float] = None) -> None:
         """
@@ -196,7 +209,7 @@ but was expecting derivative f'=%f from central difference."""
     for i, x in enumerate(scalars):
         check = central_difference(f, *scalars, arg=i)
         print(str([x.data for x in scalars]), x.derivative, i, check)
-        assert x.derivative is not None
+        assert x.derivative is not None, "Derivative should not be `None`"
         np.testing.assert_allclose(
             x.derivative,
             check.data,
