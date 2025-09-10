@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from hypothesis import given
 from hypothesis.strategies import DataObject, data
 
