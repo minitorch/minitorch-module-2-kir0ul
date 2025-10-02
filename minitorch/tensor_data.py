@@ -123,8 +123,33 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
     Raises:
         IndexingError : if cannot broadcast
     """
-    # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    if shape1 == (1,) and np.sum(shape2) > 1:
+        broadcasted_shape = shape2
+        return broadcasted_shape
+    if shape2 == (1,) and np.sum(shape1) > 1:
+        broadcasted_shape = shape1
+        return broadcasted_shape
+
+    if np.sum(shape1) > np.sum(shape2):
+        big_shape = shape1
+        small_shape = shape2
+    else:
+        big_shape = shape2
+        small_shape = shape1
+    big_shape = [item for item in reversed(big_shape)]
+    small_shape = [item for item in reversed(small_shape)]
+    broadcasted_shape = list(big_shape)
+    for shape_i, (big_v, small_v) in enumerate(zip(big_shape, small_shape)):
+        if big_shape[shape_i] == small_shape[shape_i]:
+            broadcasted_shape[shape_i] = big_shape[shape_i]
+        elif big_shape[shape_i] == 1:
+            broadcasted_shape[shape_i] = small_shape[shape_i]
+        elif small_shape[shape_i] == 1:
+            broadcasted_shape[shape_i] = big_shape[shape_i]
+        else:
+            raise IndexingError
+    broadcasted_shape = reversed(broadcasted_shape)
+    return tuple(broadcasted_shape)
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
