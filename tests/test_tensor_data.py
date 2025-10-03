@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from hypothesis import given
 from hypothesis.strategies import DataObject, data
 
@@ -55,6 +56,23 @@ def test_enumeration(tensor_data: TensorData) -> None:
     for ind in tensor_data.indices():
         for i, p in enumerate(ind):
             assert p >= 0 and p < tensor_data.shape[i]
+
+
+@pytest.mark.task2_1
+def test_enum_bis():
+    # data = [0] * 3 * 5
+    # tensor_data = minitorch.TensorData(data, (3, 5), (5, 1))
+    # indices = list(tensor_data.indices())
+    # assert len(set(tensor_data.indices())) == len(indices)
+
+    # data = np.array([ 9.66965981e-067,  1.19209290e-007, -3.40282347e+038,
+    #     6.14335213e+016,              0, -3.78141660e+016,
+    #     8.10317434e+302, -1.79769313e+308, -8.42624647e+015])
+    # tensor_data = minitorch.TensorData(data, (1, 3, 3), (9, 3, 1))
+    data = np.arange(0, 3 * 4 * 5)
+    tensor_data = minitorch.TensorData(data, (3, 4, 5), (3, 20, 1))
+    indices = list(tensor_data.indices())
+    assert len(set(tensor_data.indices())) == len(indices)
 
 
 @pytest.mark.task2_1
@@ -123,3 +141,50 @@ def test_shape_broadcast() -> None:
 @given(tensor_data())
 def test_string(tensor_data: TensorData) -> None:
     tensor_data.to_string()
+
+
+@pytest.mark.task2_2
+def test_broadcast_index() -> None:
+    # Doc example: extra leading dim in big, trailing 1 in small
+    big_shape = np.array([2, 3, 4, 5], dtype=np.int32)
+    big_index = np.array([1, 0, 2, 3], dtype=np.int32)
+    shape = np.array([3, 4, 1], dtype=np.int32)
+    out = np.zeros(len(shape), dtype=np.int32)
+    minitorch.broadcast_index(big_index, big_shape, shape, out)
+    expected = np.array([0, 2, 0], dtype=np.int32)
+    assert np.all(out == expected)
+
+    # Equal shapes: mix of 1 and >1
+    big_shape = np.array([3, 4, 1], dtype=np.int32)
+    big_index = np.array([0, 2, 0], dtype=np.int32)
+    shape = np.array([3, 4, 1], dtype=np.int32)
+    out = np.zeros(len(shape), dtype=np.int32)
+    minitorch.broadcast_index(big_index, big_shape, shape, out)
+    expected = np.array([0, 2, 0], dtype=np.int32)
+    assert np.all(out == expected)
+
+    # Middle 1 in small: stretch in middle dim
+    big_shape = np.array([3, 1, 2], dtype=np.int32)
+    big_index = np.array([0, 0, 1], dtype=np.int32)
+    shape = np.array([1, 2], dtype=np.int32)
+    out = np.zeros(len(shape), dtype=np.int32)
+    minitorch.broadcast_index(big_index, big_shape, shape, out)
+    expected = np.array([0, 1], dtype=np.int32)
+    assert np.all(out == expected)
+
+    # All 1s in small: always map to 0
+    big_shape = np.array([2, 3, 4], dtype=np.int32)
+    big_index = np.array([1, 2, 3], dtype=np.int32)
+    shape = np.array([1, 1, 1], dtype=np.int32)
+    out = np.zeros(len(shape), dtype=np.int32)
+    minitorch.broadcast_index(big_index, big_shape, shape, out)
+    expected = np.array([0, 0, 0], dtype=np.int32)
+    assert np.all(out == expected)
+
+    # Incompatible dimensions: now raises IndexingError with validation
+    # big_shape = np.array([3, 5], dtype=np.int32)
+    # big_index = np.array([0, 2], dtype=np.int32)
+    # shape = np.array([3, 4], dtype=np.int32)  # Trailing 4 !=5, not 1 → incompatible
+    # out = np.zeros(len(shape), dtype=np.int32)
+    # with pytest.raises(minitorch.IndexingError):
+    # minitorch.broadcast_index(big_index, big_shape, shape, out)
