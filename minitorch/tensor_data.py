@@ -105,8 +105,16 @@ def broadcast_index(
     Returns:
         None
     """
-    # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    big_shape = np.flip(big_shape)
+    big_index = np.flip(big_index)
+    shape = np.flip(shape)
+    out_index = np.flip(out_index)
+    for idx, (_, _) in enumerate(zip(big_shape, shape)):
+        if shape[idx] == 1:
+            out_index[idx] = 0
+        elif big_shape[idx] == shape[idx]:
+            out_index[idx] = big_index[idx]
+    out_index = np.flip(out_index)
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -139,7 +147,7 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
     big_shape = [item for item in reversed(big_shape)]
     small_shape = [item for item in reversed(small_shape)]
     broadcasted_shape = list(big_shape)
-    for shape_i, (big_v, small_v) in enumerate(zip(big_shape, small_shape)):
+    for shape_i, (_, _) in enumerate(zip(big_shape, small_shape)):
         if big_shape[shape_i] == small_shape[shape_i]:
             broadcasted_shape[shape_i] = big_shape[shape_i]
         elif big_shape[shape_i] == 1:
